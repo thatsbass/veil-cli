@@ -8,7 +8,7 @@
 # The script detects OS and architecture, downloads the latest binary from
 # GitHub Releases, and installs it to /usr/local/bin.
 #
-set -euo pipefail
+set -eu
 
 REPO="thatsbass/veil-cli"
 BINARY="veil"
@@ -39,11 +39,15 @@ esac
 
 info "detected: ${OS}/${ARCH}"
 
-LATEST=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null)
-TAG=$(echo "$LATEST" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+LATEST=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null) || true
+TAG=$(echo "$LATEST" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || true)
 
 if [ -z "$TAG" ]; then
-    err "could not determine latest release tag"
+    err "no release found on GitHub. Build from source instead:
+
+  git clone https://github.com/${REPO}.git
+  cd veil-cli
+  make install"
 fi
 
 VERSION="${TAG#v}"
