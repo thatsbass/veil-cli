@@ -19,7 +19,7 @@ import (
 func NewUseCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "use [claude|codex|cursor|aider]",
-		Short: "Configurer un outil pour utiliser Veil",
+		Short: "Configure a tool to use Veil",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runUse(repo, args)

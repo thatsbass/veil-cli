@@ -68,7 +68,7 @@ func newRootCmd() *cobra.Command {
 func newUpCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "up",
-		Short: "Vérifie la connexion et affiche le statut du compte",
+		Short: "Check connectivity and show account status",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := d.Repo.Load()
 			if err != nil {
@@ -105,7 +105,7 @@ func newUpCmd(d *deps) *cobra.Command {
 func newDownCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "down",
-		Short: "Supprime la session locale",
+		Short: "Delete the local session",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := d.Repo.Delete(); err != nil {
 				return err
@@ -119,7 +119,7 @@ func newDownCmd(d *deps) *cobra.Command {
 func newStatusCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
-		Short: "Affiche la configuration locale",
+		Short: "Show local configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := d.Repo.Load()
 			if err != nil {
@@ -143,7 +143,7 @@ func newStatusCmd(d *deps) *cobra.Command {
 func newDoctorCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
-		Short: "Diagnostic de la configuration",
+		Short: "Run connectivity diagnostics",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := d.Repo.Load()
 			if err != nil {
@@ -167,7 +167,7 @@ func newDoctorCmd(d *deps) *cobra.Command {
 func newLogsCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "logs",
-		Short: "Streaming des logs serveur (live)",
+		Short: "Stream live server logs",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := d.Repo.Load()
 			if err != nil {
@@ -207,7 +207,7 @@ func newLogsCmd(d *deps) *cobra.Command {
 func newStatsCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "stats",
-		Short: "Usage et économies du mois",
+		Short: "Show monthly usage and savings",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := d.Repo.Load()
 			if err != nil {
@@ -234,7 +234,7 @@ func newStatsCmd(d *deps) *cobra.Command {
 func newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Affiche la version de veil-cli",
+		Short: "Print the current version",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(repl.Version)
 		},
@@ -244,7 +244,7 @@ func newVersionCmd() *cobra.Command {
 func newUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
-		Short: "Mise à jour de veil-cli",
+		Short: "Check for veil-cli updates",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Current version : %s\n\n", repl.Version)
 			fmt.Println("Check for updates at:")

@@ -24,18 +24,18 @@ type SlashCommand struct {
 // allCommands returns every registered slash command in menu order.
 func allCommands() []SlashCommand {
 	return []SlashCommand{
-		{Name: "/status", Description: "Statut du serveur", Execute: cmdStatus},
-		{Name: "/stats", Description: "Usage et économies du mois", Execute: cmdStats},
-		{Name: "/billing", Description: "Plan actuel et quota", Execute: cmdBilling},
-		{Name: "/logs", Description: "Streaming des logs (Esc pour stop)", Execute: cmdLogs},
-		{Name: "/config", Description: "Éditer la configuration locale", Execute: cmdConfig},
-		{Name: "/use", Description: "Statut des outils — run: veil use", Execute: cmdUse},
-		{Name: "/provider", Description: "Changer de provider LLM", Execute: cmdProvider},
-		{Name: "/doctor", Description: "Diagnostic système", Execute: cmdDoctor},
-		{Name: "/login", Description: "Connecter le CLI", Execute: cmdLogin},
-		{Name: "/logout", Description: "Déconnecter le CLI", Execute: cmdLogout},
-		{Name: "/help", Description: "Aide complète", Execute: cmdHelp},
-		{Name: "/exit", Description: "Quitter", Execute: cmdExit},
+		{Name: "/status", Description: "Server status", Execute: cmdStatus},
+		{Name: "/stats", Description: "Monthly usage and savings", Execute: cmdStats},
+		{Name: "/billing", Description: "Current plan and quota", Execute: cmdBilling},
+		{Name: "/logs", Description: "Live log stream (Esc to stop)", Execute: cmdLogs},
+		{Name: "/config", Description: "Edit local configuration", Execute: cmdConfig},
+		{Name: "/use", Description: "Tool status — run: veil use", Execute: cmdUse},
+		{Name: "/provider", Description: "Change LLM provider", Execute: cmdProvider},
+		{Name: "/doctor", Description: "System diagnostic", Execute: cmdDoctor},
+		{Name: "/login", Description: "Log in", Execute: cmdLogin},
+		{Name: "/logout", Description: "Log out", Execute: cmdLogout},
+		{Name: "/help", Description: "Full help", Execute: cmdHelp},
+		{Name: "/exit", Description: "Quit", Execute: cmdExit},
 	}
 }
 

@@ -21,7 +21,7 @@ import (
 func NewAuthCmd(repo config.Repository) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
-		Short: "Gérer l'authentification Veil",
+		Short: "Manage Veil authentication",
 	}
 	cmd.AddCommand(newLoginCmd(repo), newLogoutCmd(repo), newAuthStatusCmd(repo))
 	return cmd
@@ -30,7 +30,7 @@ func NewAuthCmd(repo config.Repository) *cobra.Command {
 func newLoginCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "login",
-		Short: "Connecter le CLI à votre compte Veil",
+		Short: "Log in to your Veil account",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runLogin(repo)
 		},
@@ -40,7 +40,7 @@ func newLoginCmd(repo config.Repository) *cobra.Command {
 func newLogoutCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "logout",
-		Short: "Déconnecter le CLI",
+		Short: "Log out of the CLI",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := repo.Load()
 			if err != nil || cfg.APIKey == "" {
@@ -60,7 +60,7 @@ func newLogoutCmd(repo config.Repository) *cobra.Command {
 func newAuthStatusCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
-		Short: "Afficher l'état de connexion",
+		Short: "Show login status",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := repo.Load()
 			if err != nil || cfg.APIKey == "" {
