@@ -76,8 +76,10 @@ detect_arch() {
 get_latest_tag() {
     local response
 
-    response="$(curl -fsSL \
-        "https://api.github.com/repos/${REPO}/releases/latest")"
+    response="$(
+        curl -fsSL \
+            "https://api.github.com/repos/${REPO}/releases/latest"
+    )"
 
     echo "$response" \
         | grep '"tag_name":' \
@@ -148,15 +150,19 @@ Install manually:
     fi
 
     version="${tag#v}"
+
     asset="$(build_asset_name "$version" "$os" "$arch")"
     url="$(build_download_url "$tag" "$asset")"
 
     log "downloading veil ${version}"
 
     tmp_dir="$(mktemp -d)"
-    trap 'rm -rf "$tmp_dir"' EXIT
+
+    # Cleanup temporary files on exit.
+    trap "rm -rf '${tmp_dir}'" EXIT
 
     curl -fsSL "$url" -o "${tmp_dir}/${asset}"
+
     tar -xzf "${tmp_dir}/${asset}" -C "$tmp_dir"
 
     install_binary "${tmp_dir}/${BINARY_NAME}"
