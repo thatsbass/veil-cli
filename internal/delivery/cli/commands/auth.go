@@ -12,40 +12,43 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
-	"github.com/thatsbass/veil-cli/internal/api"
-	"github.com/thatsbass/veil-cli/internal/config"
+	"github.com/thatsbass/veil-cli/internal/adapter/api"
+	"github.com/thatsbass/veil-cli/internal/adapter/config"
 )
 
-// NewAuthCmd returns the `veil auth` command tree.
-func NewAuthCmd() *cobra.Command {
+// NewAuthCmd returns the `veil auth` command tree. The repo parameter is
+// injected from the composition root in cmd/main.go.
+func NewAuthCmd(repo config.Repository) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
 		Short: "Gérer l'authentification Veil",
 	}
-	cmd.AddCommand(newLoginCmd(), newLogoutCmd(), newAuthStatusCmd())
+	cmd.AddCommand(newLoginCmd(repo), newLogoutCmd(repo), newAuthStatusCmd(repo))
 	return cmd
 }
 
-func newLoginCmd() *cobra.Command {
+func newLoginCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "login",
 		Short: "Connecter le CLI à votre compte Veil",
-		RunE:  runLogin,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runLogin(repo)
+		},
 	}
 }
 
-func newLogoutCmd() *cobra.Command {
+func newLogoutCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "logout",
 		Short: "Déconnecter le CLI",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load()
+			cfg, err := repo.Load()
 			if err != nil || cfg.APIKey == "" {
 				fmt.Println("not logged in")
 				return nil
 			}
 			cfg.APIKey = ""
-			if err := cfg.Save(); err != nil {
+			if err := repo.Save(cfg); err != nil {
 				return err
 			}
 			fmt.Println("logged out")
@@ -54,12 +57,12 @@ func newLogoutCmd() *cobra.Command {
 	}
 }
 
-func newAuthStatusCmd() *cobra.Command {
+func newAuthStatusCmd(repo config.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
 		Short: "Afficher l'état de connexion",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load()
+			cfg, err := repo.Load()
 			if err != nil || cfg.APIKey == "" {
 				fmt.Println("not logged in — run: veil auth login")
 				return nil
@@ -70,8 +73,8 @@ func newAuthStatusCmd() *cobra.Command {
 	}
 }
 
-func runLogin(cmd *cobra.Command, args []string) error {
-	cfg, err := config.Load()
+func runLogin(repo config.Repository) error {
+	cfg, err := repo.Load()
 	if err != nil {
 		return err
 	}
@@ -105,7 +108,7 @@ func runLogin(cmd *cobra.Command, args []string) error {
 	}
 
 	cfg.APIKey = result.apiKey
-	if err := cfg.Save(); err != nil {
+	if err := repo.Save(cfg); err != nil {
 		return err
 	}
 
@@ -113,7 +116,7 @@ func runLogin(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// --- BubbleTea polling model ---
+// ── Device auth polling model (BubbleTea) ──
 
 type loginModel struct {
 	spinner spinner.Model

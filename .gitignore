@@ -1,0 +1,17 @@
+# Build output
+/bin/
+/bin/*
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+*.test
+*.out
+vendor/
+

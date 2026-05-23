@@ -8,35 +8,40 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/thatsbass/veil-cli/internal/domain"
 )
 
-// Client talks to the Veil API server.
+// Client is an HTTP client for the Veil API server.
+// It maintains two underlying HTTP clients: one with a 10 s timeout for
+// regular requests, and one without a timeout for long-lived SSE streams.
 type Client struct {
-	baseURL    string
-	apiKey     string
-	httpClient *http.Client
+	baseURL string
+	apiKey  string
+
+	httpClient   *http.Client
+	streamClient *http.Client
 }
 
 func NewClient(baseURL, apiKey string) *Client {
 	return &Client{
-		baseURL: baseURL,
-		apiKey:  apiKey,
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		baseURL:      baseURL,
+		apiKey:       apiKey,
+		httpClient:   &http.Client{Timeout: 10 * time.Second},
+		streamClient: &http.Client{},
 	}
 }
 
-// Status is the response from GET /health.
-type Status struct {
-	Status string `json:"status"`
-}
-
-// Stats is the response from GET /api/usage.
-type Stats struct {
-	UsedTokens  int64  `json:"used_tokens"`
-	QuotaTokens int64  `json:"quota_tokens"`
-	Percent     int    `json:"percent"`
-	ResetsAt    string `json:"resets_at"`
-}
+// All response DTOs are defined in the domain package; re-exported here for
+// backward compatibility with code that imports this adapter directly.
+type (
+	Status             = domain.Status
+	Stats              = domain.Stats
+	BillingPlan        = domain.BillingPlan
+	LogEvent           = domain.LogEvent
+	DeviceAuthResponse = domain.DeviceAuthResponse
+	TokenResponse      = domain.TokenResponse
+)
 
 func (c *Client) GetStatus(ctx context.Context) (*Status, error) {
 	var s Status
@@ -48,22 +53,32 @@ func (c *Client) GetStatus(ctx context.Context) (*Status, error) {
 
 func (c *Client) GetStats(ctx context.Context) (*Stats, error) {
 	var s Stats
-	if err := c.get(ctx, "/api/usage", &s); err != nil {
+	if err := c.get(ctx, "/v1/usage", &s); err != nil {
 		return nil, fmt.Errorf("api.GetStats: %w", err)
 	}
 	return &s, nil
 }
 
-// GetLogs streams server-sent events into the events channel until ctx is cancelled.
+func (c *Client) GetBillingPlan(ctx context.Context) (*BillingPlan, error) {
+	var p BillingPlan
+	if err := c.get(ctx, "/v1/billing/plan", &p); err != nil {
+		return nil, fmt.Errorf("api.GetBillingPlan: %w", err)
+	}
+	return &p, nil
+}
+
+// GetLogs opens a long-lived SSE connection and streams raw event lines into
+// the events channel. The stream runs until ctx is cancelled. Callers must
+// provide a buffered channel to avoid blocking the underlying HTTP reader.
 func (c *Client) GetLogs(ctx context.Context, events chan<- string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/api/logs", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/v1/logs", nil)
 	if err != nil {
 		return fmt.Errorf("api.GetLogs: %w", err)
 	}
 	c.setHeaders(req)
 	req.Header.Set("Accept", "text/event-stream")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.streamClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("api.GetLogs: %w", err)
 	}
@@ -79,22 +94,8 @@ func (c *Client) GetLogs(ctx context.Context, events chan<- string) error {
 	return scanner.Err()
 }
 
-// DeviceAuthResponse is returned by POST /auth/device.
-type DeviceAuthResponse struct {
-	DeviceCode      string `json:"device_code"`
-	UserCode        string `json:"user_code"`
-	VerificationURL string `json:"verification_url"`
-	ExpiresIn       int    `json:"expires_in"`
-	Interval        int    `json:"interval"`
-}
-
-// TokenResponse is returned by GET /auth/device/token.
-type TokenResponse struct {
-	Status string `json:"status"`
-	APIKey string `json:"api_key,omitempty"`
-}
-
-// InitiateDeviceAuth starts a new device authorization session.
+// InitiateDeviceAuth requests a new device authorization session and returns
+// the verification code the user must enter in their browser.
 func (c *Client) InitiateDeviceAuth(ctx context.Context) (*DeviceAuthResponse, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/auth/device", nil)
 	if err != nil {
@@ -116,7 +117,8 @@ func (c *Client) InitiateDeviceAuth(ctx context.Context) (*DeviceAuthResponse, e
 	return &out, nil
 }
 
-// PollDeviceToken polls for the API key after the user approves the CLI session.
+// PollDeviceToken checks whether the user has completed the device
+// authorization flow. It returns the API key once the user approves.
 func (c *Client) PollDeviceToken(ctx context.Context, deviceCode string) (*TokenResponse, error) {
 	url := c.baseURL + "/auth/device/token?device_code=" + deviceCode
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -138,6 +140,23 @@ func (c *Client) PollDeviceToken(ctx context.Context, deviceCode string) (*Token
 	}
 	return &out, nil
 }
+
+// FormatLogEvent parses a raw SSE data string and returns a human-readable line.
+// Falls back to printing the raw string if JSON parsing fails.
+func FormatLogEvent(raw string) string {
+	var e LogEvent
+	if err := json.Unmarshal([]byte(raw), &e); err != nil {
+		return raw
+	}
+	ts := e.Timestamp
+	if len(ts) > 19 {
+		ts = ts[:19]
+	}
+	return fmt.Sprintf("%-19s  %-12s  %-10s  %4dms  %s",
+		ts, e.Type, e.Provider, e.LatencyMS, e.Status)
+}
+
+// --- internal ---
 
 func (c *Client) get(ctx context.Context, path string, out any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+path, nil)
