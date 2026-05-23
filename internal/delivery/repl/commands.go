@@ -30,7 +30,6 @@ func allCommands() []SlashCommand {
 		{Name: "/logs", Description: "Live log stream (Esc to stop)", Execute: cmdLogs},
 		{Name: "/config", Description: "Edit local configuration", Execute: cmdConfig},
 		{Name: "/use", Description: "Tool status — run: veil use", Execute: cmdUse},
-		{Name: "/provider", Description: "Change LLM provider", Execute: cmdProvider},
 		{Name: "/doctor", Description: "System diagnostic", Execute: cmdDoctor},
 		{Name: "/login", Description: "Log in", Execute: cmdLogin},
 		{Name: "/logout", Description: "Log out", Execute: cmdLogout},
@@ -163,16 +162,6 @@ func cmdUse(m *model) tea.Cmd {
 		}
 		sb.WriteString("\nRun: veil use [claude|codex|cursor|aider]")
 		return outputMsg(sb.String())
-	}
-}
-
-func cmdProvider(_ *model) tea.Cmd {
-	return func() tea.Msg {
-		return outputMsg(
-			"Provider selection coming in v1.1.0.\n\n" +
-				"Current provider : auto (smart routing to cheapest available)\n" +
-				"Change manually  : /config → api_url",
-		)
 	}
 }
 

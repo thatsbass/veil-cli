@@ -1,9 +1,9 @@
 # veil-cli
 
-Veil CLI is the official command-line client for the [Veil](https://veil.dev) LLM
+Veil CLI is the command-line client for the [Veil](https://veil.dev) LLM
 gateway. It authenticates your machine, routes API calls from local AI tools
-through Veil, and provides an interactive terminal dashboard for monitoring
-usage, logs, and billing.
+through a single endpoint, and provides a terminal dashboard for monitoring
+usage and logs.
 
 ## Quick start
 

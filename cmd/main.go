@@ -22,6 +22,8 @@ type deps struct {
 	Client *api.Client
 }
 
+const tokenDisplayDivisor = 1_000_000
+
 func main() {
 	if err := newRootCmd().Execute(); err != nil {
 		os.Exit(1)
@@ -90,8 +92,8 @@ func newUpCmd(d *deps) *cobra.Command {
 			}
 			fmt.Printf("server  : %s  [%s]\n", result.APIURL, result.Status)
 			if result.QuotaTokens > 0 {
-				used := float64(result.UsedTokens) / 1_000_000
-				quota := float64(result.QuotaTokens) / 1_000_000
+				used := float64(result.UsedTokens) / tokenDisplayDivisor
+				quota := float64(result.QuotaTokens) / tokenDisplayDivisor
 				fmt.Printf("tokens  : %.1fM / %.1fM used (%d%%)\n", used, quota, result.Percent)
 				fmt.Printf("resets  : %s\n", result.ResetsAt)
 			} else {
@@ -222,8 +224,8 @@ func newStatsCmd(d *deps) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("stats: %w", err)
 			}
-			used := float64(stats.UsedTokens) / 1_000_000
-			quota := float64(stats.QuotaTokens) / 1_000_000
+			used := float64(stats.UsedTokens) / tokenDisplayDivisor
+			quota := float64(stats.QuotaTokens) / tokenDisplayDivisor
 			fmt.Printf("tokens  : %.1fM / %.1fM used (%d%%)\n", used, quota, stats.Percent)
 			fmt.Printf("resets  : %s\n", stats.ResetsAt)
 			return nil
