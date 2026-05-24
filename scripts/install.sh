@@ -124,7 +124,7 @@ install_binary() {
 
 main() {
   local repo="${VEIL_REPO:-${DEFAULT_REPO}}"
-  local platform tag asset tmpdir src dest
+  local platform tag asset src dest
 
   platform="$(detect_platform)"
   info "detected: ${platform}"
