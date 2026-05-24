@@ -83,7 +83,8 @@ build_asset_name() {
   local tag="$1"
   local platform="$2"
   local version="${tag#v}"
-  echo "veil_${version}_${platform}.tar.gz"
+  local plat="${platform//\//_}"
+  echo "veil_${version}_${plat}.tar.gz"
 }
 
 download_release() {
