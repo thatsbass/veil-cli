@@ -191,7 +191,9 @@ func (m selectorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m selectorModel) View() string {
 	var b strings.Builder
 	b.WriteString("\n")
-	b.WriteString("  " + m.s.title.Render("Select a tool to configure:") + "\n\n")
+	b.WriteString("  ")
+	b.WriteString(m.s.title.Render("Select a tool to configure:"))
+	b.WriteString("\n\n")
 
 	for i, t := range m.tools {
 		arrow := "  "
@@ -208,7 +210,7 @@ func (m selectorModel) View() string {
 			status = m.s.missing.Render("not found")
 		}
 
-		b.WriteString(fmt.Sprintf("  %s%s  %s\n", arrow, name, status))
+		fmt.Fprintf(&b, "  %s%s  %s\n", arrow, name, status)
 	}
 
 	b.WriteString("\n")
